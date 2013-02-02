@@ -1,0 +1,385 @@
+﻿<!-- 
+操作方法：
+    双击地图，创建节点。
+    双击节点，修改节点名字，如果名字以*打头，则表示该点为场景。
+    按住Alt，双击节点，可以删除节点，并删除与该节点有关的所有连线。
+    按住Ctrl，从一个节点拖动到另一个节点，则在两个节点之间建立一个连线（两点间的距离默认为0）。
+    单击连线，修改两点间的距离。
+    按住Alt，双击连线，可以删除连线。
+    按下s键，会打印出所有的最短路径。
+ -->
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<script src="raphael.js"></script>
+<script src="jquery.js"></script>
+<script>
+function test(){
+    var before = {"nodes": [{"title":"N0","x":655,"y":674},{"title":"N1","x":742,"y":669}, {"title":"N2","x":847,"y":674},{"title":"XX大厦","x":924,"y":668}, {"title":"*钢琴酒吧","x":1154,"y":629},{"title":"楼亭水榭","x":1277,"y":661}, {"title":"N6","x":1362,"y":736},{"title":"N7","x":1415,"y":802}, {"title":"N8","x":1419,"y":857},{"title":"N9","x":1386,"y":889}, {"title":"N10","x":1308,"y":901},{"title":"N11","x":1181,"y":944}, {"title":"N12","x":967,"y":987},{"title":"N13","x":927,"y":958}, {"title":"*N14","x":935,"y":1022},{"title":"N15","x":889,"y":998}, {"title":"N16","x":915,"y":858},{"title":"*N17","x":817,"y":899}, {"title":"N18","x":899,"y":783},{"title":"N19","x":946,"y":714}, {"title":"N20","x":872,"y":892},{"title":"N21","x":906,"y":493}, {"title":"N22","x":971,"y":382},{"title":"N23","x":987,"y":345}, {"title":"N24","x":1206,"y":250},{"title":"N25","x":1252,"y":237}, {"title":"N26","x":1283,"y":199},{"title":"*复旦大学","x":1393,"y":201}, {"title":"*上腾娱乐","x":651,"y":607},{"title":"N29","x":901,"y":585}, {"title":"N30","x":1083,"y":769},{"title":"N31","x":1085,"y":693}, {"title":"N32","x":1119,"y":758},{"title":"柜台","x":1121,"y":689}, {"title":"N34","x":1331,"y":775},{"title":"N35","x":1300,"y":823}, {"title":"N36","x":1178,"y":822},{"title":"N37","x":1285,"y":688}, {"title":"*N39","x":602,"y":876}, {"title":"*N40","x":702,"y":858}],"links":{"1_3": {"length":"5","n1":"N0","n2":"N1"},"1_57":{"length":"5","n1":"*上腾娱乐","n2":"N0"},"3_5":{"length":"7","n1":"N1","n2":"N2"},"5_7": {"length":"5","n1":"N2","n2":"XX大厦"},"7_9":{"length":"18","n1":"XX大厦","n2":"*钢琴酒吧"},"7_39":{"length":"2","n1":"N19","n2":"XX大厦"},"7_59": {"length":"6","n1":"XX大厦","n2":"N29"},"9_11":{"length":"9","n1":"*钢琴酒吧","n2":"楼亭水榭"},"11_13":{"length":"10","n1":"楼亭水榭","n2":"N6"},"13_15": {"length":"8","n1":"N6","n2":"N7"},"15_17": {"length":"4","n1":"N7","n2":"N8"},"17_19": {"length":"2","n1":"N8","n2":"N9"},"19_21": {"length":"5","n1":"N9","n2":"N10"},"21_23": {"length":"10","n1":"N10","n2":"N11"},"23_25": {"length":"17","n1":"N11","n2":"N12"},"25_27": {"length":"2","n1":"N12","n2":"N13"},"25_29": {"length":"1","n1":"*N14","n2":"N12"},"27_31": {"length":"2","n1":"N13","n2":"N15"},"27_33": {"length":"100","n1":"N13","n2":"N16"},"29_31": {"length":"2","n1":"N15","n2":"*N14"},"33_37": {"length":"4","n1":"N16","n2":"N18"},"33_41": {"length":"3","n1":"N20","n2":"N16"},"35_41": {"length":"2","n1":"*N17","n2":"N20"},"37_39": {"length":"4","n1":"N18","n2":"N19"},"37_61": {"length":"12","n1":"N18","n2":"N30"},"43_45": {"length":"10","n1":"N21","n2":"N22"},"43_59": {"length":"6","n1":"N29","n2":"N21"},"45_47": {"length":"2","n1":"N22","n2":"N23"},"47_49": {"length":"20","n1":"N23","n2":"N24"},"49_51": {"length":"3","n1":"N24","n2":"N25"},"51_53": {"length":"3","n1":"N25","n2":"N26"},"53_55": {"length":"8","n1":"N26","n2":"*复旦大学"},"61_65": {"length":"1","n1":"N30","n2":"N32"},"61_63": {"length":"3","n1":"N31","n2":"N30"},"63_67": {"length":"1","n1":"N31","n2":"柜台"},"65_67":{"length":"3","n1":"柜台","n2":"N32"},"65_73":{"length":"4","n1":"N32","n2":"N36"},"67_75": {"length":"9","n1":"柜台","n2":"N37"},"69_71": {"length":"3","n1":"N35","n2":"N34"},"69_75":{"length":"7","n1":"N34","n2":"N37"},"71_73":{"length":"6","n1":"N36","n2":"N35"},"77_79":{"length":"2","n1":"*N39","n2":"*N40"}},"maxIndex":42};
+    var maxIndex = 0;
+    var image = "http://farm9.staticflickr.com/8183/8437517569_07facd626b_o.jpg",
+        mapWidth = 2000, 
+        mapHeight = 1516;
+
+    var paper = Raphael(0, 0, mapWidth, mapHeight);
+    var map = paper.image(image, 0, 0, mapWidth, mapHeight);
+    var nodes = [];
+    var nodeNames = {};
+    var $input = $("<input type=text length=12>")
+            .css({position: "absolute", width: 100})
+            .hide()
+            .insertAfter("svg");
+    create( before );
+    map.dblclick(function(e) {
+        var node = Node( window.scrollX + e.clientX, window.scrollY + e.clientY, "N" + maxIndex++ );
+        if( node ) nodes.push( node );
+    });
+    map.click( function(e){
+        if( $input.is(":visible") ){
+            $input.dblclick();
+        }
+    });
+    
+    function nodeNameValid( to, from ){
+        if( from === to ){
+            return true;
+        }else if( nodeNames[to] ){
+            alert("此名字已经存在，请换一个吧！");
+            return false;
+        }else{
+            nodeNames[to] = true;
+            return true;
+        }
+    }
+    
+    function changeNodeName( node ){
+        var title = $input.val();
+        if( !nodeNameValid(title, node.title) ){
+            $input.val( node.title );
+            return;
+        }
+        node.title = title;
+        node.name.attr( "text", node.title );
+        $input.hide();
+    }
+    
+    function Node( x, y, title ){
+        if( !nodeNameValid(title) ) return;
+        var node = paper.circle(x, y, 10).attr( {fill: "rgba(0, 0, 0)"} );
+        node.cusType = "Node";
+        node.links = {};
+        node.title = title || "";
+        node.name = paper.text( x, y+25, node.title).attr({font: "18px Arial"});  
+        var onclick = function( e ){
+            if( e.altKey ){
+                if( confirm("你确定要删除节点" + node.title + "吗？\n会删除所有与该节点想相关的连线。") ){
+                    for( var key in node.links ){
+                        node.links[key].delete();
+                    }
+                    for( var i = 0; i < nodes.length; i++ ){
+                        if( nodes[i] === node ){
+                            nodes.splice( i, 1 );
+                            break;
+                        }
+                    }
+                    node.name.remove();
+                    node.remove();
+                }
+            }else{
+                $input.css({"left": node.name.attr("x"), top: node.name.attr("y")})
+                    .val( node.title )
+                    .show()
+                    .unbind()
+                    .dblclick( function(){
+                        changeNodeName( node );
+                    }).keyup( function( e ){
+                        if( e.keyCode === 13 ){
+                            changeNodeName( node );
+                        }
+                    }).focus();
+            }
+        };
+        node.dblclick( onclick );
+        node.name.dblclick( onclick );
+        
+        function move( dx, dy, x, y, e ){
+            if( e.ctrlKey ){
+                if( node.path ) node.path.remove();
+                node.path = paper.path( [["M", x - dx, y - dy], ["L", dx>0 ? x-1 : x+1, dy>0 ? y-1 : y+1]] )
+                    .attr( {"stroke": "red", "stroke-width": 2} );
+            }else{
+                node.attr( {cx: node.ox + dx, cy: node.oy + dy} );
+                node.name.attr( {x: node.nx + dx, y: node.ny + dy} );
+                for( var key in node.links ){
+                    node.links[key].resetPath();
+                }
+            }
+        }
+        function start( x, y, e ){
+            node.ox = node.attr("cx");
+            node.oy = node.attr("cy");
+            node.nx = node.name.attr("x");
+            node.ny = node.name.attr("y");
+        }
+        function end( e ){
+            node.path && node.path.remove();
+            if( e.ctrlKey ){
+                var t = e.target.raphael; 
+                if( t && t.cusType === "Node" ) Link( node, t );
+            }else{
+                // do nothing
+            }
+        }
+        node.drag( move, start,end );
+        node.name.drag( move, start,end );
+        
+        node.hover( function(){
+                this.attr("r", 15);
+            },
+            function(){
+                this.attr("r", 10);
+            }
+        );
+        return node;
+    }
+    
+    function Link( node1, node2, length ){
+        if( node1 === node2 ) return; // 同一个节点不可以相连
+        var id = getLinkId( node1, node2 );
+        if( node1.links[id] ) return node1.links[id]; // 已创建连接，则直接返回。
+        var path = Path( node1, node2, length );
+        var link = {
+            node1: node1,
+            node2: node2,
+            path: path,
+            id: id
+        };
+        path.link = link;
+        link.resetPath = function(){
+            var x1 = node1.attr("cx"), 
+                y1 = node1.attr("cy"),
+                x2 = node2.attr("cx"),
+                y2 = node2.attr("cy");
+            path.attr( "path", [["M", x1, y1],["L", x2, y2]] );
+            path.$length.attr( {x: (x1+x2)/2, y: (y1+y2)/2} );
+        }
+        link.delete = function(){
+            delete node1.links[link.id];
+            delete node2.links[link.id];
+            path.delete();
+        }
+        
+        node1.links[link.id] = node2.links[link.id] = link;
+        return link;
+    }
+    
+    function getLinkId( node1, node2 ){
+        return (node1.id < node2.id) ? (node1.id + "_" + node2.id) : (node2.id + "_" + node1.id)
+    }
+    
+    function Path( node1, node2, length ){
+        var attr = {
+            "stroke": "red", 
+            "stroke-width": 5
+        };
+        var x1 = node1.attr("cx"), 
+            y1 = node1.attr("cy"),
+            x2 = node2.attr("cx"),
+            y2 = node2.attr("cy");
+        var path = paper.path( [["M", x1, y1],["L", x2, y2]] )
+            .attr( attr )
+            .insertAfter( map );
+        path.length = length || 0;
+        path.$length = paper.text( (x1+x2)/2, (y1+y2)/2, path.length );
+        var onclick = function( e ){
+            if( e.altKey ){
+                if( confirm("你确定要删除该路线吗？") ){
+                    path.link.delete();
+                }
+            }else{
+                $input.css({"left": path.$length.attr("x"), top: path.$length.attr("y")})
+                    .val( path.length )
+                    .show()
+                    .unbind()
+                    .dblclick( function(){
+                        path.length = $input.val();
+                        path.$length.attr( "text", path.length );
+                        $input.hide();
+                    }).keyup( function( e ){
+                        if( e.keyCode === 13 ){
+                            path.length = $input.val();
+                            path.$length.attr( "text", path.length );
+                            $input.hide();
+                        }
+                    }).focus();
+            }
+        }
+        path.click( onclick );
+        path.$length.click( onclick );
+        path.delete = function(){
+            path.$length.remove();
+            path.remove();
+        }
+        function mouseover(){
+            path.attr("stroke-width", 10);
+        }
+        function mouseout(){
+            path.attr("stroke-width", 5);
+        }
+        path.hover( mouseover, mouseout );
+        path.$length.hover( mouseover, mouseout );
+        return path;
+    }
+    
+    
+    function dijkstra( num, start, dist, prev, table ){
+        //其中n指n个节点,v指起点,dist[i]记录源点到i点的最短特殊路径,prev[i]记录在特殊路径当中i点的前一个点,table[][]就是无向图的邻接矩阵
+        var s = []; // 已经计算过的节点，值为true，否则为undefined
+        for( var i = 0; i < num; i++ ){
+            dist[i] = table[start][i];
+            if( dist[i] === inf || i === start ){
+                prev[i] = -1;
+            }else{
+                prev[i] = start;
+            }
+        }
+        dist[start] = 0;
+        s[start] = true;
+        var min, cand;
+        for( var i = 1; i < num; i++ ){
+            min = inf;
+            for( var j = 0; j < num; j++ ){
+                if( !s[j] && dist[j] < min ){
+                    min = dist[j];
+                    cand = j;
+                }
+            }
+            // 此时min和cand分别表示将要计算节点的距离以及索引号。
+            s[cand] = true; //标记为已计算
+            for( var j = 0; j < num; j++ ){
+                if( !s[j] && table[cand][j] < inf ){
+                    if( min + table[cand][j] < dist[j] ){
+                        dist[j] = min + table[cand][j];
+                        prev[j] = cand;
+                    }
+                }
+            }
+        }
+    }
+
+
+    $(document).keydown( function( e ){
+        if( e.keyCode === 83 && e.target !== $input[0] ){
+            calculate();
+            save();
+        }
+    });
+    
+    var inf = 100000;
+    function calculate(){
+        var n = nodes.length;
+        var table = [],
+            name = [],
+            care = [],
+            node, link;
+        for( var i = 0; i < nodes.length; i++ ){
+            table[i] = [];
+            node = nodes[i];
+            if( node.title.substring(0, 1) === "*" ){
+                care.push( name[i] = node.title.substring(1) );
+            }else{
+                name[i] = node.title;
+            }
+            
+            for( var j = 0; j < n; j++ ) table[i][j] = (i === j ? 0 : inf) ;
+            for( var j = 0; j < nodes.length; j++ ){
+                link = node.links[ getLinkId( node, nodes[j] ) ];
+                if( link && link.path ){
+                    table[i][j] = parseInt( link.path.length, 10 );
+                }
+            }
+        }
+        
+        //for( var i = 0; i < n; i++ ){
+        //    console.log( table[i] );
+        //}
+        var dist = [];
+        var prev = [];
+        var careIndexes = {};
+        for( var i = 0; i < care.length; i++ ){
+            for( var j = 0; j <name.length; j++ ){
+                if( care[i] === name[j]){
+                    careIndexes[ care[i] ] = j;
+                }
+            }
+        }
+        for( var i = 0; i < n; i++ ){
+            if( typeof careIndexes[ name[i] ] === "undefined" ) continue;
+            console.log("从" + name[i] + "出发：");
+            dijkstra( n, i, dist, prev, table );
+            //displayClostestPath( dist, prev );
+            console.log( dist );
+            console.log( prev );
+            var n, path, pre, index;
+            for( var j = 0; j < care.length; j++ ){
+                if( name[i] === care[j] ) continue;
+                index = careIndexes[care[j]];
+                if( prev[index] === -1 ){
+                    console.log( name[i] + " -> " + care[j] + ": 不通" );
+                    continue;
+                }
+                path = [ care[j] ];
+                while( path[0] !== name[i] && index !== -1 ){
+                    index = prev[index];
+                    path.unshift( name[index] );
+                }
+                console.log( name[i] + " -> " + care[j] + "最短距离: " + dist[index] +"，最短路径: " + path );
+            }
+        }
+    }
+    
+    function save(){
+        var obj = {nodes: [], links: {}, maxIndex: maxIndex};
+        var node, link;
+        for( var i = 0; i < nodes.length; i++ ){
+            node = nodes[i];
+            obj.nodes.push( {title: node.title, x: node.attr("cx"), y: node.attr("cy")} );
+            for( var k in node.links ){
+                link = node.links[k];
+                obj.links[link.id] = { 
+                    length: link.path.length, 
+                    n1: link.node1.title,
+                    n2: link.node2.title
+                };
+            }
+        }
+        var str = JSON.stringify(obj);
+        console.log( str );
+    }
+    
+    function create( obj ){
+        if( !obj ) obj = {};
+        if( !obj.nodes ) obj.nodes = [];
+        if( !obj.links ) obj.links = {};
+        maxIndex = obj.maxIndex || 0;
+        var ns = obj.nodes,
+            ls = obj.links,
+            n, nd, n1, n2, l;
+        var nodeSet = {};
+        for( var i = 0; i < ns.length; i++ ){
+            n = ns[i];
+            nd = Node(n.x, n.y, n.title);
+            nodes.push( nd );
+            nodeSet[n.title] = nd;
+        }
+        for( var i in ls ){
+            l = ls[i];
+            n1 = nodeSet[l.n1];
+            n2 = nodeSet[l.n2];
+            if( n1 && n2 ){
+                Link(n1, n2, l.length);
+            }
+        }
+    }
+    
+}
+$(test);
+</script>
